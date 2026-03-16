@@ -1,0 +1,234 @@
+.space {
+  height: 100vh;
+  background: radial-gradient(circle at bottom, #1b2735, #090a0f 80%);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  text-align: center;
+}
+
+
+.stars {
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  background-image: radial-gradient(white 1px, transparent 1px);
+  background-size: 50px 50px;
+  animation: starsMove 100s linear infinite;
+  opacity: 0.6;
+}
+
+@keyframes starsMove {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-2000px);
+  }
+}
+
+
+.shooting-star {
+  position: absolute;
+  top: 20%;
+  left: -100px;
+  width: 150px;
+  height: 2px;
+  background: linear-gradient(90deg, white, transparent);
+  animation: shoot 5s linear infinite;
+}
+
+.shooting-star.second {
+  top: 40%;
+  animation-delay: 3s;
+}
+
+@keyframes shoot {
+  0% {
+    transform: translateX(0) translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(1200px) translateY(300px);
+    opacity: 0;
+  }
+}
+
+
+.planet {
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #ff9966, #ff5e62);
+  top: 10%;
+  left: 8%;
+  box-shadow: 0 0 60px rgba(255, 100, 80, 0.8);
+  animation: planetFloat 8s ease-in-out infinite;
+  cursor: pointer;
+}
+
+@keyframes planetFloat {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-30px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+
+.sun {
+  position: absolute;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffd200, #ff8c00);
+  top: 8%;
+  right: 10%;
+  box-shadow: 0 0 80px #ffae00;
+  animation: sunFloat 7s ease-in-out infinite;
+  cursor: pointer;
+}
+
+@keyframes sunFloat {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-25px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+
+.earth {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #2b86ff, #003cff);
+  bottom: 15%;
+  left: 12%;
+  box-shadow: 0 0 40px rgba(0, 100, 255, 0.8);
+  animation: earthFloat 9s ease-in-out infinite;
+  cursor: pointer;
+}
+
+@keyframes earthFloat {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-35px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+
+.astronaut {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  background: url("https://cdn-icons-png.flaticon.com/512/3212/3212608.png")
+    no-repeat center;
+  background-size: contain;
+  right: 10%;
+  top: 15%;
+  animation: astronautFloat 10s ease-in-out infinite;
+}
+
+@keyframes astronautFloat {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-40px) rotate(8deg);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+}
+
+
+.content {
+  z-index: 10;
+}
+
+.content h1 {
+  font-size: 150px;
+  margin: 0;
+  background: linear-gradient(45deg, #ff416c, #ff4b2b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.content h2 {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+.content p {
+  opacity: 0.8;
+  margin-bottom: 25px;
+}
+
+
+.btn-home {
+  padding: 14px 35px;
+  border-radius: 40px;
+  text-decoration: none;
+  background: linear-gradient(45deg, #ff416c, #ff4b2b);
+  color: white;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.btn-home:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 25px #ff416c;
+}
+
+
+.bounce {
+  animation: bouncePlanet 0.7s ease;
+}
+
+@keyframes bouncePlanet {
+  0% {
+    transform: translateY(0);
+  }
+
+  30% {
+    transform: translateY(-90px) scale(1.1);
+  }
+
+  60% {
+    transform: translateY(20px);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.sun, .earth, .planet {
+  position: absolute;
+  cursor: grab;
+  transition: transform 0.2s;
+  animation-timing-function: ease-in-out;
+}
+
+.sun:active, .earth:active, .planet:active {
+  cursor: grabbing;
+}
