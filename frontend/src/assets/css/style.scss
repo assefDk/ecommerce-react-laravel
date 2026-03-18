@@ -59,7 +59,6 @@ ul {
   max-width: 1540px;
 }
 
-
 .nav-tabs {
   .nav-link {
     color: $primary-black;
@@ -67,7 +66,6 @@ ul {
 }
 
 .btn {
-  
   &.btn-size {
     background-color: rgba($primary-black, 0.03);
     border-color: rgba($primary-black, 0.05);
@@ -188,20 +186,23 @@ footer {
   }
 }
 
-.product-detail{
-  .mySwiper{
-    .swiper-slide{
+.product-detail {
+  .mySwiper {
+    .swiper-slide {
       height: auto !important;
     }
   }
-  .price{
+  .price {
     font-weight: bold;
-    span{
-      color: rgba($primary-black, 0.50);
+    span {
+      color: rgba($primary-black, 0.5);
     }
   }
 }
 
+.login {
+  width: 450px;
+}
 
 @media (min-width: 200px) and (max-width: 768px) {
   .section-1 {
