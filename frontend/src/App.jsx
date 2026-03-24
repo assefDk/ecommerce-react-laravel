@@ -13,10 +13,19 @@ import { ToastContainer, toast } from "react-toastify";
 import { AdminRequireAuth } from "./components/admin/AdminRequireAuth";
 
 
+import { default as ShowCategories } from "./components/admin/catugory/Show";
+import { default as CreateCategory } from "./components/admin/catugory/Create";
+import { default as EditCategory } from "./components/admin/catugory/Edit";
+
+
+import { default as ShowBrands } from "./components/admin/brand/Show";
+import { default as CreateBrand } from "./components/admin/brand/Create";
+import { default as EditBrand } from "./components/admin/brand/Edit";
+
+
 function App() {
   return (
     <>
-      {/* <div>hello i am app file</div> */}
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -26,11 +35,71 @@ function App() {
           <Route path="/checkout" element={<Checkout />} />
 
           <Route path="/admin/login" element={<Login />} />
-          <Route path="/admin/dashboard" element={
-            <AdminRequireAuth>
-              <Dashboard />
-            </AdminRequireAuth>
-          } />
+
+          <Route
+            path="/admin/dashboard"
+            element={
+              <AdminRequireAuth>
+                <Dashboard />
+              </AdminRequireAuth>
+            }
+          />
+
+          {/* categories */}
+          <Route
+            path="/admin/categories"
+            element={
+              <AdminRequireAuth>
+                <ShowCategories />
+              </AdminRequireAuth>
+            }
+          />
+          <Route
+            path="/admin/categories/create"
+            element={
+              <AdminRequireAuth>
+                <CreateCategory />
+              </AdminRequireAuth>
+            }
+          />
+          <Route
+            path="/admin/categories/edit/:id"
+            element={
+              <AdminRequireAuth>
+                <EditCategory />
+              </AdminRequireAuth>
+            }
+          />
+
+          {/* brand */}
+          <Route
+            path="/admin/brands"
+            element={
+              <AdminRequireAuth>
+                <ShowBrands />
+              </AdminRequireAuth>
+            }
+          />
+          <Route
+            path="/admin/brand/create"
+            element={
+              <AdminRequireAuth>
+                <CreateBrand />
+              </AdminRequireAuth>
+            }
+          />
+          <Route
+            path="/admin/brand/edit/:id"
+            element={
+              <AdminRequireAuth>
+                <EditBrand />
+              </AdminRequireAuth>
+            }
+          />
+
+          {/* Product */}
+          
+
 
           {/* 404 page */}
           <Route path="*" element={<NotFound />} />
