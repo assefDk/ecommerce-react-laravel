@@ -19,9 +19,9 @@ class ProductController extends Controller
         $products = Product::orderBy('created_at', 'DESC')->get();
 
         return response()->json([
-            'status' => true,
+            'status' => 200,
             'data' => $products
-        ]);
+        ],200);
     }
 
     // POST /products
@@ -34,7 +34,7 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'short_description' => 'nullable|string',
             'category_id' => 'required|exists:categories,id',
-            'brand_id' => 'required|exists:brands,id',
+            'brand_id' => 'exists:brands,id',
             'qty' => 'nullable|integer',
             'sku' => 'required|string|unique:products,sku',
             'barcode' => 'nullable|string',

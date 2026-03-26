@@ -12,16 +12,17 @@ import Dashboard from "./components/admin/Dashboard";
 import { ToastContainer, toast } from "react-toastify";
 import { AdminRequireAuth } from "./components/admin/AdminRequireAuth";
 
-
 import { default as ShowCategories } from "./components/admin/catugory/Show";
 import { default as CreateCategory } from "./components/admin/catugory/Create";
 import { default as EditCategory } from "./components/admin/catugory/Edit";
-
 
 import { default as ShowBrands } from "./components/admin/brand/Show";
 import { default as CreateBrand } from "./components/admin/brand/Create";
 import { default as EditBrand } from "./components/admin/brand/Edit";
 
+import { default as ShowProducts } from "./components/admin/product/Show";
+import { default as CreateProduct } from "./components/admin/product/Create";
+import { default as EditProduct } from "./components/admin/product/Edit";
 
 function App() {
   return (
@@ -98,8 +99,30 @@ function App() {
           />
 
           {/* Product */}
-          
-
+          <Route
+            path="/admin/products"
+            element={
+              <AdminRequireAuth>
+                <ShowProducts />
+              </AdminRequireAuth>
+            }
+          />
+          <Route
+            path="/admin/product/create"
+            element={
+              <AdminRequireAuth>
+                <CreateProduct />
+              </AdminRequireAuth>
+            }
+          />
+          <Route
+            path="/admin/brand/product/:id"
+            element={
+              <AdminRequireAuth>
+                <EditProduct />
+              </AdminRequireAuth>
+            }
+          />
 
           {/* 404 page */}
           <Route path="*" element={<NotFound />} />

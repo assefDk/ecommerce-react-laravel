@@ -21,6 +21,14 @@ class Product extends Model
         'status',
         'is_featured',
     ];
+    protected $appends = ['image_url'];
+
+    public function getImageUrlAttribute(){
+        if($this->image == ""){
+            return "";
+        }
+        return asset('/uploads/products/small/'.$this->image);
+    }
 
     public function category()
     {
