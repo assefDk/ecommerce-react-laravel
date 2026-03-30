@@ -15,4 +15,6 @@ class SizeController extends Controller
             'data'=> $sizes
         ],200);
     }
+
+    
 }

@@ -21,13 +21,15 @@ class Product extends Model
         'status',
         'is_featured',
     ];
+    
     protected $appends = ['image_url'];
 
-    public function getImageUrlAttribute(){
-        if($this->image == ""){
+    public function getImageUrlAttribute()
+    {
+        if ($this->image == "") {
             return "";
         }
-        return asset('/uploads/products/small/'.$this->image);
+        return asset('/uploads/products/small/' . $this->image);
     }
 
     public function category()
@@ -38,5 +40,17 @@ class Product extends Model
     public function brand()
     {
         return $this->belongsTo(Brand::class);
+    }
+
+    
+    public function images()
+    {
+        return $this->hasMany(ProductImage::class);
+    }
+
+
+    public function product_sizes()
+    {
+        return $this->hasMany(ProductSize::class);
     }
 }

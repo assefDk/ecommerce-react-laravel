@@ -13,12 +13,17 @@ const Create = ({ placeholder }) => {
   const [disable, setDisable] = useState(false);
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
+  const [gallery, setGallery] = useState([]); // مصفوفة لتخزين بيانات الصور {id, url, name}
+  const [uploading, setUploading] = useState(false);
+  const [sizes, setSizes] = useState([]);
+  const [sizeChecked, setSizeChecked] = useState([]);
   const navigate = useNavigate();
 
   const config = useMemo(
     () => ({
-      readonly: false, // all options from https://xdsoft.net/jodit/docs/,
+      readonly: false,
       placeholder: placeholder || "Start typings...",
+      height: 400,
     }),
     [placeholder],
   );
@@ -26,71 +31,223 @@ const Create = ({ placeholder }) => {
   const {
     register,
     handleSubmit,
-    watch,
+    setError,
     formState: { errors },
   } = useForm();
 
+  // حفظ المنتج
   const saveProduct = async (data) => {
-    console.log(data);
-    return;
+    // استخراج IDs فقط من مصفوفة gallery
+    const galleryIds = gallery.map((item) => item.id);
+
+    const payload = {
+      title: data.title,
+      price: data.price,
+      compare_price: data.compare_price || null,
+      content: content,
+      short_description: data.short_description || null,
+      category: data.category,
+      brand: data.brand || null,
+      qty: data.qty || 0,
+      sku: data.sku,
+      barcode: data.barcode || null,
+      status: parseInt(data.status),
+      is_featured: data.is_featured,
+      gallery: galleryIds,
+      sizes: sizeChecked
+    };
+
     setDisable(true);
-    const res = await fetch(`${apiUrl}/products`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `Bearer ${adminToken()}`,
-      },
-      body: JSON.stringify(data),
-    })
-      .then((res) => res.json())
-      .then((result) => {
-        console.log(result);
-        setDisable(false);
-        if (result.status == 200) {
-          toast.success(result.message);
-          navigate("/admin/categories");
-        } else {
-          console.log("something went wrong");
-        }
+
+    try {
+      const res = await fetch(`${apiUrl}/products`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${adminToken()}`,
+        },
+        body: JSON.stringify(payload),
       });
+
+      const result = await res.json();
+
+      if (result.status === 200 || result.status === 201) {
+        toast.success(result.message);
+        navigate("/admin/products");
+        return;
+      }
+
+      if (result.errors) {
+        Object.keys(result.errors).forEach((field) => {
+          setError(field, {
+            type: "server",
+            message: result.errors[field][0],
+          });
+        });
+        toast.error("Please check the form errors");
+      } else {
+        toast.error(result.message || "Something went wrong");
+      }
+    } catch (error) {
+      console.error("Save error:", error);
+      toast.error("Server error. Please try again.");
+    } finally {
+      setDisable(false);
+    }
   };
 
+  // جلب التصنيفات
   const fetchCategories = async () => {
-    const res = await fetch(`${apiUrl}/categories`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `Bearer ${adminToken()}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((result) => {
-        // console.log(result.data)
-        setCategories(result.data);
+    try {
+      const res = await fetch(`${apiUrl}/categories`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${adminToken()}`,
+        },
       });
+      const result = await res.json();
+      if (result.data) {
+        setCategories(result.data);
+      }
+    } catch (error) {
+      console.error("Fetch categories error:", error);
+      toast.error("Failed to load categories");
+    }
   };
 
+  // جلب الماركات
   const fetchBrands = async () => {
-    const res = await fetch(`${apiUrl}/brands`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `Bearer ${adminToken()}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((result) => {
-        // console.log(result.data);
-        setBrands(result.data);
+    try {
+      const res = await fetch(`${apiUrl}/brands`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${adminToken()}`,
+        },
       });
+      const result = await res.json();
+      if (result.data) {
+        setBrands(result.data);
+      }
+    } catch (error) {
+      console.error("Fetch brands error:", error);
+      toast.error("Failed to load brands");
+    }
+  };
+
+  const fetchSizes = async () => {
+    try {
+      const res = await fetch(`${apiUrl}/sizes`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${adminToken()}`,
+        },
+      });
+      const result = await res.json();
+      if (result.data) {
+        setSizes(result.data);
+      }
+    } catch (error) {
+      console.error("Fetch brands error:", error);
+      toast.error("Failed to load brands");
+    }
+  };
+
+  // رفع الصورة
+  const handleFile = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // التحقق من نوع الملف
+    const allowedTypes = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Only JPG, PNG, WEBP images are allowed");
+      e.target.value = "";
+      return;
+    }
+
+    // التحقق من الحجم (2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Image size must be less than 2MB");
+      e.target.value = "";
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    setUploading(true);
+
+    try {
+      const res = await fetch(`${apiUrl}/temp-images`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${adminToken()}`,
+        },
+        body: formData,
+      });
+
+      const result = await res.json();
+
+      if (result.status === 200) {
+        // إنشاء رابط الصورة المصغرة
+        const baseUrl = apiUrl.replace("/api", "");
+        const imageUrl = `${baseUrl}/uploads/temp/thumb/${result.data.name}`;
+
+        // تخزين بيانات الصورة كاملة
+        setGallery((prev) => [
+          ...prev,
+          {
+            id: result.data.id,
+            name: result.data.name,
+            url: imageUrl,
+          },
+        ]);
+        toast.success("Image uploaded successfully");
+        e.target.value = ""; // reset input
+      } else {
+        toast.error(result.message || "Upload failed");
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("Failed to upload image");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // حذف صورة من المعرض
+  const removeImage = async (imageId) => {
+    try {
+      const res = await fetch(`${apiUrl}/temp-images/${imageId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${adminToken()}`,
+        },
+      });
+
+      if (res.ok) {
+        setGallery((prev) => prev.filter((item) => item.id !== imageId));
+        toast.info("Image removed");
+      } else {
+        setGallery((prev) => prev.filter((item) => item.id !== imageId));
+      }
+    } catch (error) {
+      console.error("Remove error:", error);
+      setGallery((prev) => prev.filter((item) => item.id !== imageId));
+    }
   };
 
   useEffect(() => {
     fetchCategories();
     fetchBrands();
+    fetchSizes();
   }, []);
 
   return (
@@ -110,17 +267,18 @@ const Create = ({ placeholder }) => {
             <form onSubmit={handleSubmit(saveProduct)}>
               <div className="card shadow">
                 <div className="card-body p-4">
+                  {/* العنوان */}
                   <div className="mb-3">
-                    <label htmlFor="" className="form-label">
-                      Title
+                    <label htmlFor="title" className="form-label">
+                      Title <span className="text-danger">*</span>
                     </label>
                     <input
                       {...register("title", {
-                        required: "The name field is required",
+                        required: "The title field is required",
                       })}
                       type="text"
-                      className={`form-control mb-3 ${errors.title && "is-invalid"}`}
-                      placeholder="Title"
+                      className={`form-control ${errors.title && "is-invalid"}`}
+                      placeholder="Product Title"
                     />
                     {errors.title && (
                       <p className="invalid-feedback">
@@ -129,32 +287,28 @@ const Create = ({ placeholder }) => {
                     )}
                   </div>
 
+                  {/* التصنيف والماركة */}
                   <div className="row">
                     <div className="col-md-6">
                       <div className="mb-3">
-                        <label className="form-label" htmlFor="">
-                          Category
+                        <label className="form-label">
+                          Category <span className="text-danger">*</span>
                         </label>
                         <select
                           {...register("category", {
-                            required: "please select a Category",
+                            required: "Please select a category",
                           })}
-                          className={`form-control mb-3 ${errors.category && "is-invalid"}`}
+                          className={`form-select ${errors.category && "is-invalid"}`}
                         >
-                          <option value="" hidden>
-                            Select a Category
-                          </option>
-                          {categories &&
-                            categories.map((category) => {
-                              return (
-                                <option
-                                  key={`category-${category.id}`}
-                                  value={category.id}
-                                >
-                                  {category.name}
-                                </option>
-                              );
-                            })}
+                          <option value="">Select a Category</option>
+                          {categories.map((category) => (
+                            <option
+                              key={`category-${category.id}`}
+                              value={category.id}
+                            >
+                              {category.name}
+                            </option>
+                          ))}
                         </select>
                         {errors.category && (
                           <p className="invalid-feedback">
@@ -166,71 +320,66 @@ const Create = ({ placeholder }) => {
 
                     <div className="col-md-6">
                       <div className="mb-3">
-                        <label className="form-label" htmlFor="">
-                          Brand
-                        </label>
-                        <select
-                          {...register("brand")}
-                          className="form-control"
-                        >
-                          <option value="" hidden>
-                            Select a Brand
-                          </option>
-                          {brands &&
-                            brands.map((brand) => {
-                              return (
-                                <option
-                                  key={`category-${brand.id}`}
-                                  value={brand.id}
-                                >
-                                  {brand.name}
-                                </option>
-                              );
-                            })}
+                        <label className="form-label">Brand</label>
+                        <select {...register("brand")} className="form-select">
+                          <option value="">Select a Brand</option>
+                          {brands.map((brand) => (
+                            <option key={`brand-${brand.id}`} value={brand.id}>
+                              {brand.name}
+                            </option>
+                          ))}
                         </select>
                       </div>
                     </div>
                   </div>
 
+                  {/* الوصف المختصر */}
                   <div className="mb-3">
-                    <label htmlFor="" className="form-label">
+                    <label htmlFor="short_description" className="form-label">
                       Short Description
                     </label>
                     <textarea
+                      {...register("short_description")}
                       className="form-control"
                       placeholder="Short Description"
                       rows={3}
-                    ></textarea>
+                    />
                   </div>
 
+                  {/* الوصف الكامل */}
                   <div className="mb-3">
-                    <label htmlFor="" className="form-label">
-                      Descreption
+                    <label htmlFor="description" className="form-label">
+                      Description
                     </label>
                     <JoditEditor
                       ref={editor}
                       value={content}
                       config={config}
-                      tabIndex={1} // tabIndex of textarea
-                      onBlur={(newContent) => setContent(newContent)} // preferred to use only this option to update the content for performance reasons
+                      onBlur={(newContent) => setContent(newContent)}
                     />
                   </div>
 
+                  {/* Pricing Section */}
                   <h3 className="py-3 border-bottom mb-3">Pricing</h3>
 
                   <div className="row">
                     <div className="col-md-6">
                       <div className="mb-3">
-                        <label htmlFor="" className="form-label">
-                          Price
+                        <label className="form-label">
+                          Price <span className="text-danger">*</span>
                         </label>
                         <input
-                          type="text"
+                          type="number"
+                          step="0.01"
                           placeholder="Price"
                           {...register("price", {
-                            required: "the price field is reqired",
+                            required: "The price field is required",
+                            min: {
+                              value: 0,
+                              message: "Price must be greater than 0",
+                            },
                           })}
-                          className={`form-control mb-3 ${errors.price && "is-invalid"}`}
+                          className={`form-control ${errors.price && "is-invalid"}`}
                         />
                         {errors.price && (
                           <p className="invalid-feedback">
@@ -242,33 +391,34 @@ const Create = ({ placeholder }) => {
 
                     <div className="col-md-6">
                       <div className="mb-3">
-                        <label htmlFor="" className="form-label">
-                          Discounted Price
-                        </label>
+                        <label className="form-label">Discounted Price</label>
                         <input
-                          type="text"
-                          placeholder=" Discounted Price"
+                          {...register("compare_price")}
+                          type="number"
+                          step="0.01"
+                          placeholder="Discounted Price"
                           className="form-control"
                         />
                       </div>
                     </div>
                   </div>
 
+                  {/* Inventory Section */}
                   <h3 className="py-3 border-bottom mb-3">Inventory</h3>
 
                   <div className="row">
                     <div className="col-md-6">
                       <div className="mb-3">
-                        <label htmlFor="" className="form-label">
-                          SKU
+                        <label className="form-label">
+                          SKU <span className="text-danger">*</span>
                         </label>
                         <input
                           type="text"
                           placeholder="SKU"
                           {...register("sku", {
-                            required: "the sku field is reqired",
+                            required: "The SKU field is required",
                           })}
-                          className={`form-control mb-3 ${errors.sku && "is-invalid"}`}
+                          className={`form-control ${errors.sku && "is-invalid"}`}
                         />
                         {errors.sku && (
                           <p className="invalid-feedback">
@@ -280,10 +430,9 @@ const Create = ({ placeholder }) => {
 
                     <div className="col-md-6">
                       <div className="mb-3">
-                        <label htmlFor="" className="form-label">
-                          Barcode
-                        </label>
+                        <label className="form-label">Barcode</label>
                         <input
+                          {...register("barcode")}
                           type="text"
                           placeholder="Barcode"
                           className="form-control"
@@ -295,12 +444,11 @@ const Create = ({ placeholder }) => {
                   <div className="row">
                     <div className="col-md-6">
                       <div className="mb-3">
-                        <label htmlFor="" className="form-label">
-                          Qty
-                        </label>
+                        <label className="form-label">Quantity</label>
                         <input
-                          type="text"
-                          placeholder="Qty"
+                          {...register("qty")}
+                          type="number"
+                          placeholder="Quantity"
                           className="form-control"
                         />
                       </div>
@@ -308,20 +456,18 @@ const Create = ({ placeholder }) => {
 
                     <div className="col-md-6">
                       <div className="mb-3">
-                        <label htmlFor="" className="form-label">
-                          Status
+                        <label className="form-label">
+                          Status <span className="text-danger">*</span>
                         </label>
                         <select
-                          className={`form-control mb-3 ${errors.status && "is-invalid"}`}
                           {...register("status", {
-                            required: "Plesae select a status",
+                            required: "Please select a status",
                           })}
+                          className={`form-select ${errors.status && "is-invalid"}`}
                         >
-                          <option value="" hidden>
-                            Select a Status
-                          </option>
+                          <option value="">Select a Status</option>
                           <option value="1">Active</option>
-                          <option value="0">Block</option>
+                          <option value="0">Inactive</option>
                         </select>
                         {errors.status && (
                           <p className="invalid-feedback">
@@ -330,48 +476,151 @@ const Create = ({ placeholder }) => {
                         )}
                       </div>
                     </div>
-
-                    <div className="mb-3">
-                      <label htmlFor="" className="form-label">
-                        Featured
-                      </label>
-                      <select
-                        className={`form-control mb-3 ${errors.is_featured && "is-invalid"}`}
-                        {...register("is_featured", {
-                          required: "Plesae select a status",
-                        })}
-                      >
-                        <option value="" hidden>
-                          Select a Status
-                        </option>
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
-                      </select>
-                      {errors.is_featured && (
-                        <p className="invalid-feedback">
-                          {errors.is_featured?.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <h3 className="py-3 border-bottom mb-3">Gallery</h3>
-
-                    <div className="mb-3">
-                      <label htmlFor="" className="form-label">
-                        Image
-                      </label>
-                      <input type="file" className="form-control" />
-                    </div>
                   </div>
+
+                  <div className="mb-3">
+                    <label className="form-label">
+                      Featured <span className="text-danger">*</span>
+                    </label>
+                    <select
+                      {...register("is_featured", {
+                        required: "Please select featured status",
+                      })}
+                      className={`form-select ${errors.is_featured && "is-invalid"}`}
+                    >
+                      <option value="">Select Featured Status</option>
+                      <option value="Yes">Yes</option>
+                      <option value="No">No</option>
+                    </select>
+                    {errors.is_featured && (
+                      <p className="invalid-feedback">
+                        {errors.is_featured?.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <h3 className="py-3 border-bottom mb-3">Sizes</h3>
+
+                  <div className="mb-3">
+                    {sizes &&
+                      sizes.map((size) => {
+                        return (
+                          <div className="form-check-inline ps-2" key={size.id}>
+                            <input
+                              {...register("sizes")}
+                              checked={sizeChecked.includes(size.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSizeChecked([...sizeChecked, size.id]);
+                                } else {
+                                  setSizeChecked(
+                                    sizeChecked.filter((sid) => size.id != sid),
+                                  );
+                                }
+                              }}
+                              className="form-check-input"
+                              type="checkbox"
+                              value={size.id}
+                              id={`flexCheck${size.id}`}
+                            />
+                            <label
+                              className="form-check-label ps-2"
+                              htmlFor={`flexCheck${size.id}`}
+                            >
+                              {size.name}
+                            </label>
+                          </div>
+                        );
+                      })}
+                  </div>
+
+                  {/* Gallery Section */}
+                  <h3 className="py-3 border-bottom mb-3">Gallery</h3>
+
+                  <div className="mb-3">
+                    <label className="form-label">Upload Images</label>
+                    <input
+                      onChange={handleFile}
+                      type="file"
+                      className="form-control"
+                      accept="image/jpeg,image/png,image/jpg,image/webp"
+                      disabled={uploading}
+                    />
+                    {uploading && (
+                      <div className="mt-2 text-primary">
+                        <small>Uploading...</small>
+                      </div>
+                    )}
+                    <small className="text-muted">
+                      Allowed formats: JPG, PNG, WEBP. Max size: 2MB
+                    </small>
+                  </div>
+
+                  {/* عرض الصور المرفوعة مع صور حقيقية وزر حذف */}
+                  {gallery.length > 0 && (
+                    <div className="mb-3">
+                      <label className="form-label fw-bold">
+                        Uploaded Images ({gallery.length})
+                      </label>
+                      <div className="row mt-3">
+                        {gallery.map((image, index) => (
+                          <div
+                            key={image.id}
+                            className="col-md-3 col-sm-4 col-6 mb-3"
+                          >
+                            <div className="card h-100 shadow-sm">
+                              <div className="position-relative">
+                                <img
+                                  src={image.url}
+                                  alt={`Uploaded ${index + 1}`}
+                                  className="card-img-top"
+                                  style={{
+                                    height: "150px",
+                                    objectFit: "cover",
+                                    borderTopLeftRadius: "calc(0.25rem - 1px)",
+                                    borderTopRightRadius: "calc(0.25rem - 1px)",
+                                  }}
+                                  onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src =
+                                      "https://placehold.co/150x150?text=No+Image";
+                                  }}
+                                />
+                                <button
+                                  type="button"
+                                  className="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 rounded-circle"
+                                  style={{
+                                    width: "30px",
+                                    height: "30px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                  }}
+                                  onClick={() => removeImage(image.id)}
+                                >
+                                  ×
+                                </button>
+                              </div>
+                              <div className="card-body p-2 text-center">
+                                <small className="text-muted text-truncate d-block">
+                                  Image {index + 1}
+                                </small>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
               <button
-                disabled={disable}
+                disabled={disable || uploading}
                 type="submit"
                 className="btn btn-primary mt-3 mb-5"
               >
-                Create
+                {disable ? "Creating..." : "Create Product"}
               </button>
             </form>
           </div>
@@ -382,4 +631,3 @@ const Create = ({ placeholder }) => {
 };
 
 export default Create;
-// 44:19

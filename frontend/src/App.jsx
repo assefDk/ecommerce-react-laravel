@@ -115,8 +115,9 @@ function App() {
               </AdminRequireAuth>
             }
           />
+          
           <Route
-            path="/admin/brand/product/:id"
+            path="/admin/product/edit/:id"
             element={
               <AdminRequireAuth>
                 <EditProduct />
@@ -124,8 +125,14 @@ function App() {
             }
           />
 
+          
+
+
+
+
           {/* 404 page */}
           <Route path="*" element={<NotFound />} />
+
         </Routes>
       </BrowserRouter>
       <ToastContainer />
