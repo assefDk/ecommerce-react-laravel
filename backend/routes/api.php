@@ -20,7 +20,9 @@ Route::post('/admin/login', [AuthController::class, 'authenticate'])->name('admi
 // front
 Route::get('get-latest-porducts', [ProductFrontContoller::class, 'latestProducts']);
 Route::get('get-featured-porducts', [ProductFrontContoller::class, 'featuredProducts']);
-
+Route::get('get-categories', [ProductFrontContoller::class, 'grtCategories']);
+Route::get('get-brands', [ProductFrontContoller::class, 'grtBrands']);
+Route::get('get-products', [ProductFrontContoller::class, 'grtProducts']);
 
 
 
