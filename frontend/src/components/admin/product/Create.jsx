@@ -35,9 +35,7 @@ const Create = ({ placeholder }) => {
     formState: { errors },
   } = useForm();
 
-  // حفظ المنتج
   const saveProduct = async (data) => {
-    // استخراج IDs فقط من مصفوفة gallery
     const galleryIds = gallery.map((item) => item.id);
 
     const payload = {
@@ -97,7 +95,6 @@ const Create = ({ placeholder }) => {
     }
   };
 
-  // جلب التصنيفات
   const fetchCategories = async () => {
     try {
       const res = await fetch(`${apiUrl}/categories`, {
@@ -118,7 +115,6 @@ const Create = ({ placeholder }) => {
     }
   };
 
-  // جلب الماركات
   const fetchBrands = async () => {
     try {
       const res = await fetch(`${apiUrl}/brands`, {

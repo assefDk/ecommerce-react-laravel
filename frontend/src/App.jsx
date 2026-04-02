@@ -23,18 +23,36 @@ import { default as EditBrand } from "./components/admin/brand/Edit";
 import { default as ShowProducts } from "./components/admin/product/Show";
 import { default as CreateProduct } from "./components/admin/product/Create";
 import { default as EditProduct } from "./components/admin/product/Edit";
+import Register from "./components/Register";
+import { default as UserLogin } from "./components/Login";
+import Profile from "./components/profile";
+import { RequireAuth } from "./components/RequireAuth";
 
 function App() {
   return (
     <>
       <BrowserRouter>
         <Routes>
+          {/* user routes */}
           <Route path="/" element={<Home />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/product/:id" element={<Product />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/account/register" element={<Register />} />
+          <Route path="/account/login" element={<UserLogin />} />
 
+          <Route
+            path="/account"
+            element={
+              <RequireAuth>
+                <Profile />
+              </RequireAuth>
+            }
+          />
+
+
+          {/* admin routes */}
           <Route path="/admin/login" element={<Login />} />
 
           <Route
@@ -115,7 +133,7 @@ function App() {
               </AdminRequireAuth>
             }
           />
-          
+
           <Route
             path="/admin/product/edit/:id"
             element={
@@ -125,14 +143,8 @@ function App() {
             }
           />
 
-
-
-
-
-
           {/* 404 page */}
           <Route path="*" element={<NotFound />} />
-
         </Routes>
       </BrowserRouter>
       <ToastContainer />
