@@ -48,14 +48,13 @@ const Shop = () => {
       .then((res) => res.json())
       .then((result) => {
         if (result.status === 200) {
-          // استخدام === بدلاً من ==
           setProducts(result.data);
         } else {
-          console.log("Something went wrong"); // تصحيح الإملاء
+          console.log("Something went wrong");  
         }
       })
       .catch((error) => console.error("Error fetching products:", error));
-  }, [catChecked, brandChecked]); // إضافة brandChecked كاعتماد
+  }, [catChecked, brandChecked]);  
 
   const fetchCategories = () => {
     fetch(`${apiUrl}/get-categories`, {
@@ -113,16 +112,14 @@ const Shop = () => {
     }
   };
 
-  // useEffect للـ products فقط
   useEffect(() => {
     fetchProducts();
-  }, [fetchProducts]); // فقط fetchProducts كاعتماد
+  }, [fetchProducts]);  
 
-  // useEffect للـ categories و brands (مرة واحدة فقط)
   useEffect(() => {
     fetchCategories();
     fetchBrands();
-  }, []); // مصفوفة فارغة تعني التنفيذ مرة واحدة فقط
+  }, []);
 
   return (
     <Layout>
@@ -208,7 +205,6 @@ const Shop = () => {
                       <div className="product card border-0">
                         <div className="card-img">
                           <Link to={`/product/${product.id}`}>
-                            {" "}
                             {/* إضافة id المنتج */}
                             {!product.image_url || product.image_url === "" ? (
                               <img

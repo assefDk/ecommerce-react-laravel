@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import ProductImag from "../../assets/images/eight.jpg";
 import { apiUrl } from "../common/http";
+import { Link } from "react-router-dom";
 
 const LatestProducts = () => {
   const [products, setProducts] = useState([]);
@@ -58,7 +59,9 @@ const LatestProducts = () => {
                     </div>
 
                     <div className="card-body pt-3">
-                      <a href="">{product.title}</a>
+                      <Link to={`/product/${product.id}`}>
+                        {product.title}
+                      </Link>
                       <div className="price">
                         ${product.price} &nbsp;
                         {product.compare_price && (

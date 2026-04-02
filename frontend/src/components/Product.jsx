@@ -1,6 +1,6 @@
 import Layout from "./common/Layout";
-import { Link } from "react-router-dom";
-import { useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { useContext, useEffect, useState } from "react";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Thumbs, FreeMode, Navigation } from "swiper/modules";
@@ -18,10 +18,60 @@ import ProductImgOne from "../assets/images/mens/five.jpg";
 import ProductImgTow from "../assets/images/mens/six.jpg";
 import ProductImgThree from "../assets/images/mens/seven.jpg";
 import { Rating } from "react-simple-star-rating";
+import { apiUrl } from "./common/http";
+import { CartContext } from "./context/Cart";
+import { toast } from "react-toastify";
 
 const Product = () => {
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
   const [rating, setRating] = useState(4);
+  const [product, setProduct] = useState([]);
+  const [productImages, setProductImages] = useState([]);
+  const [productSizes, setProductSizes] = useState([]);
+  const [sizeSelected, setSizeSelected] = useState(null);
+  const params = useParams();
+  const { addToCart } = useContext(CartContext);
+
+  const fetchProduct = () => {
+    fetch(`${apiUrl}/get-product/${params.id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then((result) => {
+        // console.log(result.data);
+        if (result.status === 200) {
+          setProduct(result.data);
+          setProductImages(result.data.images);
+          setProductSizes(result.data.product_sizes);
+        } else {
+          console.log("Something went wrong");
+        }
+      })
+      .catch((error) => console.error("Error fetching categories:", error));
+  };
+
+  const handleAddToCart = () => {
+    if (productSizes.length > 0) {
+      if (sizeSelected == null) {
+        toast.error("Please select a size");
+      } else {
+        addToCart(product, sizeSelected);
+        toast.success("Product added to cart");
+      }
+    } else {
+      addToCart(product, null);
+      toast.success("Product added to cart");
+    }
+  };
+  // console.log(productImages);
+
+  useEffect(() => {
+    fetchProduct();
+  }, []);
 
   return (
     <Layout>
@@ -58,28 +108,25 @@ const Product = () => {
                   modules={[FreeMode, Navigation, Thumbs]}
                   className="mySwiper mt-2"
                 >
-                  <SwiperSlide>
-                    <img src={ProductImgOne} alt="product" className="w-100" />
-                  </SwiperSlide>
-
-                  <SwiperSlide>
-                    <img src={ProductImgTow} alt="product" className="w-100" />
-                  </SwiperSlide>
-
-                  <SwiperSlide>
-                    <img
-                      src={ProductImgThree}
-                      alt="product"
-                      className="w-100"
-                    />
-                  </SwiperSlide>
-                </Swiper>
+                  {productImages &&
+                    productImages.map((image) => (
+                      <SwiperSlide key={image.id}>
+                        <img
+                          src={`http://localhost:8000/uploads/products/small/${image.image}`}
+                          alt="product"
+                          height={100}
+                          className="w-100"
+                        />
+                      </SwiperSlide>
+                    ))}
+                   
+              </Swiper>
               </div>
 
               {/* الصورة الكبيرة */}
               <div className="col-10">
                 <Swiper
-                  loop={true}
+                  loop={productImages.length > 2}
                   spaceBetween={10}
                   navigation={true}
                   thumbs={{
@@ -91,29 +138,31 @@ const Product = () => {
                   modules={[FreeMode, Navigation, Thumbs]}
                   className="mySwiper2"
                 >
-                  <SwiperSlide>
+                  {productImages &&
+                    productImages.map((image) => (
+                      <SwiperSlide key={image.id}>
+                        <img
+                          src={`http://localhost:8000/uploads/products/large/${image.image}`}
+                          alt="product"
+                          className="w-100"
+                        />
+                      </SwiperSlide>
+                    ))}
+                  {/* <SwiperSlide>
                     <img src={ProductImgOne} alt="product" className="w-100" />
                   </SwiperSlide>
-
                   <SwiperSlide>
                     <img src={ProductImgTow} alt="product" className="w-100" />
-                  </SwiperSlide>
-
-                  <SwiperSlide>
-                    <img
-                      src={ProductImgThree}
-                      alt="product"
-                      className="w-100"
-                    />
-                  </SwiperSlide>
+                  </SwiperSlide> */}
                 </Swiper>
               </div>
             </div>
           </div>
 
-          {/* تفاصيل المنتج */}
+        
+
           <div className="col-md-7">
-            <h2>Dummy Product Title</h2>
+            <h2>{product.title}</h2>
 
             <div className="d-flex">
               <Rating size={20} readOnly initialValue={rating} />
@@ -121,29 +170,39 @@ const Product = () => {
             </div>
 
             <div className="price h3 py-3">
-              $199.00{" "}
-              <span className="text-decoration-line-through">$299.00</span>
+              ${product.price} &nbsp;
+              {product.compare_price && (
+                <span className="text-decoration-line-through">
+                  ${product.compare_price}
+                </span>
+              )}
             </div>
 
-            <div>
-              Lorem ipsum dolor sit amet,
-              <br /> consectetur adipiscing elit.
-              <br /> Sed do eiusmod tempor incididunt ut labore.
-              <br />
-            </div>
+            <div>{product.short_description}</div>
 
             <div className="pt-3">
               <strong>Select Size</strong>
               <div className="sizes pt-2">
-                <button className="btn btn-size">S</button>
-                <button className="btn btn-size ms-1">M</button>
-                <button className="btn btn-size ms-1">L</button>
-                <button className="btn btn-size ms-1">XL</button>
+                {productSizes &&
+                  productSizes.map((product_size) => {
+                    return (
+                      <button
+                        onClick={() => setSizeSelected(product_size.size.name)}
+                        key={product_size.id}
+                        className={`btn btn-size me-2 ${sizeSelected === product_size.size.name ? "active" : ""}`}
+                      >
+                        {product_size.size.name}
+                      </button>
+                    );
+                  })}
               </div>
             </div>
 
             <div className="add-to-cart my-4">
-              <button className="btn btn-primary text-uppercase">
+              <button
+                onClick={() => handleAddToCart()}
+                className="btn btn-primary text-uppercase"
+              >
                 Add to Cart
               </button>
             </div>
@@ -152,7 +211,7 @@ const Product = () => {
 
             <div>
               <strong>SKU:</strong>
-              1234567890
+              {product.sku}
             </div>
           </div>
         </div>
@@ -160,17 +219,18 @@ const Product = () => {
         <div className="row pb-5">
           <div className="col-md-12">
             <Tabs
-              defaultActiveKey="profile"
+              defaultActiveKey="description"
               id="uncontrolled-tab-example"
               className="mb-3"
             >
-              <Tab eventKey="home" title="Description">
-                Tab content for Description
+              <Tab eventKey="home" title="description">
+                <div
+                  dangerouslySetInnerHTML={{ __html: product.description }}
+                ></div>
               </Tab>
               <Tab eventKey="profile" title="Reviews (10)">
                 Tab content for Reviews
               </Tab>
-               
             </Tabs>
           </div>
         </div>

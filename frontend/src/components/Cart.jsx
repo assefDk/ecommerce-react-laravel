@@ -1,9 +1,28 @@
-import React from "react";
+import React, { useContext, useState } from "react";
 import Layout from "./common/Layout";
 import { Link } from "react-router-dom";
 import PrductImage from "../assets/images/mens/six.jpg";
+import { CartContext } from "./context/Cart";
 
 const Cart = () => {
+  const {
+    cartData,
+    grandTotal,
+    subTotal,
+    shipping,
+    updateCartItem,
+    deleteCartItem,
+  } = useContext(CartContext);
+  const [qty, setQty] = useState({});
+
+  // console.log(cartData);
+
+  const handleQty = (e, itemId) => {
+    const newQty = Math.max(1, e.target.value);
+    setQty((prev) => ({ ...prev, [itemId]: newQty }));
+    updateCartItem(itemId, newQty);
+  };
+
   return (
     <Layout>
       <div className="container pb-5">
@@ -24,146 +43,102 @@ const Cart = () => {
 
             <table className="table">
               <tbody>
-                <tr>
-                  <td width={100}>
-                    <img src={PrductImage} width={80} alt="" />
-                  </td>
-                  <td width={400}>
-                    <h4>Product Name</h4>
-                    <div className="d-flex align-items-center pt-3">
-                      <span>$10</span>
-                      <div className="ps-3">
-                        <button className="btn btn-size">S</button>
-                      </div>
-                    </div>
-                  </td>
+                {cartData.length == 0 && (
+                  <tr>
+                    <td align="center" colSpan={4} style={{ fontSize: "20px" }}>
+                      <h4>Your cart is empty</h4>
+                    </td>
+                  </tr>
+                )}
+                {cartData &&
+                  cartData.map((item) => {
+                    return (
+                      <tr key={item.id}>
+                        <td width={100}>
+                          <img src={item.image_url} width={80} alt="" />
+                        </td>
+                        <td width={400}>
+                          <h4>{item.title}</h4>
+                          <div className="d-flex align-items-center pt-3">
+                            <span>${item.price.toFixed(2)}</span>
+                            <div className="ps-3">
+                              {item.size && (
+                                <button className="btn btn-size">
+                                  {item.size}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </td>
 
-                  <td valign="middle">
-                    <input
-                      style={{ width: "100px" }}
-                      type="number"
-                      value={1}
-                      className="form-control"
-                    />
-                  </td>
+                        <td valign="middle">
+                          <input
+                            min={1}
+                            max={10}
+                            type="number"
+                            value={qty[item.id] ?? item.qty}
+                            onChange={(e) => handleQty(e, item.id)}
+                          />
+                        </td>
 
-                  <td valign="middle">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="20"
-                      height="20"
-                      fill="currentColor"
-                      className="bi bi-trash3"
-                      viewBox="0 0 16 16"
-                    >
-                      <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5" />
-                    </svg>
-                  </td>
-                </tr>
-                <tr>
-                  <td width={100}>
-                    <img src={PrductImage} width={80} alt="" />
-                  </td>
-                  <td width={400}>
-                    <h4>Product Name</h4>
-                    <div className="d-flex align-items-center pt-3">
-                      <span>$10</span>
-                      <div className="ps-3">
-                        <button className="btn btn-size">S</button>
-                      </div>
-                    </div>
-                  </td>
-
-                  <td valign="middle">
-                    <input
-                      style={{ width: "100px" }}
-                      type="number"
-                      value={1}
-                      className="form-control"
-                    />
-                  </td>
-
-                  <td valign="middle">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="20"
-                      height="20"
-                      fill="currentColor"
-                      className="bi bi-trash3"
-                      viewBox="0 0 16 16"
-                    >
-                      <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5" />
-                    </svg>
-                  </td>
-                </tr>
-                <tr>
-                  <td width={100}>
-                    <img src={PrductImage} width={80} alt="" />
-                  </td>
-                  <td width={400}>
-                    <h4>Product Name</h4>
-                    <div className="d-flex align-items-center pt-3">
-                      <span>$10</span>
-                      <div className="ps-3">
-                        <button className="btn btn-size">S</button>
-                      </div>
-                    </div>
-                  </td>
-
-                  <td valign="middle">
-                    <input
-                      style={{ width: "100px" }}
-                      type="number"
-                      value={1}
-                      className="form-control"
-                    />
-                  </td>
-
-                  <td valign="middle">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="20"
-                      height="20"
-                      fill="currentColor"
-                      className="bi bi-trash3"
-                      viewBox="0 0 16 16"
-                    >
-                      <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5" />
-                    </svg>
-                  </td>
-                </tr>
+                        <td valign="middle">
+                          <a
+                            href="#"
+                            onClick={() => {
+                              deleteCartItem(item.id);
+                            }}
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              fill="currentColor"
+                              className="bi bi-trash3"
+                              viewBox="0 0 16 16"
+                            >
+                              <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5" />
+                            </svg>
+                          </a>
+                        </td>
+                      </tr>
+                    );
+                  })}
               </tbody>
             </table>
           </div>
 
-          <div className="row justify-content-end">
-            <div className="col-md-3">
-              <div className="d-flex justify-content-between border-bottom pb-2">
-                <div>
-                  <strong>Subtotal</strong>
+          {cartData.length > 0 && (
+            <div className="row justify-content-end">
+              <div className="col-md-3">
+                <div className="d-flex justify-content-between border-bottom pb-2">
+                  <div>
+                    <strong>Subtotal</strong>
+                  </div>
+                  <div>${subTotal().toFixed(2)}</div>
                 </div>
-                <div>$20</div>
-              </div>
 
-              <div className="d-flex justify-content-between border-bottom py-2">
-                <div>
-                  <strong>Shipping</strong>
+                <div className="d-flex justify-content-between border-bottom py-2">
+                  <div>
+                    <strong>Shipping</strong>
+                  </div>
+                  <div>${shipping().toFixed(2)}</div>
                 </div>
-                <div>$20</div>
-              </div>
 
-              <div className="d-flex justify-content-between border-bottom">
-                <div>
-                  <strong>Grand Total</strong>
+                <div className="d-flex justify-content-between border-bottom">
+                  <div>
+                    <strong>Grand Total</strong>
+                  </div>
+                  <div>${grandTotal().toFixed(2)}</div>
                 </div>
-                <div>$25</div>
-              </div>
 
-              <div className="d-flex justify-content-end py-3">
-                <button className="btn btn-primary">proceed to Checkout</button>
+                <div className="d-flex justify-content-end py-3">
+                  <button className="btn btn-primary">
+                    proceed to Checkout
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </Layout>

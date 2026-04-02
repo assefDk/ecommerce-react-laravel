@@ -1,7 +1,35 @@
-import React from "react";
+import { Link } from "react-router-dom";
 import LogoBlack from "../../assets/images/logo-white.png";
+import { apiUrl } from "./http";
+
+import { useEffect, useState } from "react";
 
 const Footer = () => {
+  const [categories, setCategories] = useState([]);
+
+  const fetchCategories = () => {
+    fetch(`${apiUrl}/get-categories`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.status === 200) {
+          setCategories(result.data);
+        } else {
+          console.log("Something went wrong");
+        }
+      })
+      .catch((error) => console.error("Error fetching categories:", error));
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
   return (
     <footer className="py-5 text-white">
       <div className="container">
@@ -16,15 +44,16 @@ const Footer = () => {
           <div className="col-md-3 pb-4">
             <h2 className="mb-3">Categories</h2>
             <ul>
-              <li>
-                <a href="#">Kids</a>
-              </li>
-              <li>
-                <a href="#">Mens</a>
-              </li>
-              <li>
-                <a href="#">Womens</a>
-              </li>
+              {categories &&
+                categories.map((category) => {
+                  return (
+                    <li key={category.id}>
+                      <Link to={`/shop?category=${category.id}`}>
+                        {category.name}
+                      </Link>
+                    </li>
+                  );
+                })}
             </ul>
           </div>
 

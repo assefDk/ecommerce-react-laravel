@@ -6,6 +6,7 @@ use App\Http\Controllers\admin\CategoryController;
 use App\Http\Controllers\admin\ProductController;
 use App\Http\Controllers\admin\SizeController;
 use App\Http\Controllers\admin\TempImageContoller;
+use App\Http\Controllers\front\AccountController;
 use App\Http\Controllers\front\ProductFrontContoller;
 use Illuminate\Support\Facades\Route;
 
@@ -23,6 +24,11 @@ Route::get('get-featured-porducts', [ProductFrontContoller::class, 'featuredProd
 Route::get('get-categories', [ProductFrontContoller::class, 'grtCategories']);
 Route::get('get-brands', [ProductFrontContoller::class, 'grtBrands']);
 Route::get('get-products', [ProductFrontContoller::class, 'grtProducts']);
+Route::get('get-product/{id}', [ProductFrontContoller::class, 'grtProduct']);
+// auht customer
+Route::post('/register', [AccountController::class, 'register']);
+Route::post('/login', [AccountController::class, 'authenticate']);
+
 
 
 

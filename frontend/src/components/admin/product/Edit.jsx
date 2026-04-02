@@ -61,7 +61,7 @@ const Edit = ({ placeholder }) => {
       if (result.status === 200) {
         const product = result.data;
 
-        // تعبئة الحقول
+        console.log(product);
         setValue("title", product.title);
         setValue("price", product.price);
         setValue("compare_price", product.compare_price || "");
@@ -75,10 +75,8 @@ const Edit = ({ placeholder }) => {
         setValue("is_featured", product.is_featured);
         setContent(product.description || "");
 
-        // تعبئة الصور الموجودة - تصحيح مسار الصورة
         if (product.images && product.images.length > 0) {
-          // إزالة كلمة "api/" من المسار إذا وجدت
-          const baseUrl = apiUrl.replace("/api", ""); // تحويل http://localhost:8000/api إلى http://localhost:8000
+          const baseUrl = apiUrl.replace("/api", "");
 
           const imagesWithUrl = product.images.map((img) => ({
             ...img,
@@ -103,11 +101,13 @@ const Edit = ({ placeholder }) => {
 
   // تحديث المنتج
   const updateProduct = async (data) => {
+    console.log(data);
+    // return "";
     const payload = {
       title: data.title,
       price: data.price,
       compare_price: data.compare_price || null,
-      description: content, // <-- هنا بدل content
+      description: content,
       short_description: data.short_description || null,
       category: data.category,
       brand: data.brand || null,

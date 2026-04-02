@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 class SizeController extends Controller
 {
     public function index(){
-        $sizes = Size::orderBy('name','ASC')->get();
+        $sizes = Size::orderBy('id','ASC')->get();
         return response()->json([
             'status' => 200,
             'data'=> $sizes

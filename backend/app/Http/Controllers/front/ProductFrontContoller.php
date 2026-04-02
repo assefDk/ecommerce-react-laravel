@@ -15,13 +15,13 @@ class ProductFrontContoller extends Controller
     {
         $products = Product::orderBy('created_at', 'DESC')
             ->where('status', 1);
-           
-            
-        if(!empty($request->category)){
+
+
+        if (!empty($request->category)) {
             $catArray = explode(',', $request->category);
             $products = $products->whereIn('category_id', $catArray);
         }
-        if(!empty($request->brand)){
+        if (!empty($request->brand)) {
             $brandArray = explode(',', $request->brand);
             $products = $products->whereIn('brand_id', $brandArray);
         }
@@ -40,6 +40,7 @@ class ProductFrontContoller extends Controller
             ->where('status', 1)
             ->limit(8)
             ->get();
+
         return response()->json([
             'status' => 200,
             'data' => $products
@@ -53,6 +54,7 @@ class ProductFrontContoller extends Controller
             ->where('is_featured', 'Yes')
             ->limit(8)
             ->get();
+
         return response()->json([
             'status' => 200,
             'data' => $products
@@ -64,6 +66,7 @@ class ProductFrontContoller extends Controller
         $categories = Category::orderBy('created_at', 'ASC')
             ->where('status', 1)
             ->get();
+
         return response()->json([
             'status' => 200,
             'data' => $categories
@@ -75,11 +78,29 @@ class ProductFrontContoller extends Controller
         $brands = Brand::orderBy('created_at', 'ASC')
             ->where('status', 1)
             ->get();
+
         return response()->json([
             'status' => 200,
             'data' => $brands
         ], 200);
     }
+    public function grtProduct($id)
+    {
+        $product = Product::with('product_sizes.size','images')->find($id);
+
+        if ($product == null) {
+            return response()->json([
+                'status' => 404,
+                'message' => "Product Not Found"
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => 200,
+            'data' => $product
+        ], 200);
+    }
+
 
 
 
