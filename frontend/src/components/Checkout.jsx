@@ -1,18 +1,102 @@
-import React from "react";
+import React, { useContext } from "react";
 import Layout from "./common/Layout";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import PrductImage from "../assets/images/mens/six.jpg";
 import { useState } from "react";
+import { CartContext } from "./context/Cart";
+import { useForm } from "react-hook-form";
+import { apiUrl, userToken } from "./common/http";
+import { toast } from "react-toastify";
 
 const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState("cod");
+  const { cartData, grandTotal, subTotal, shipping } = useContext(CartContext);
+  const navigate = useNavigate();
 
+  // console.log(cartData);
 
   const handlePaymentMethod = (e) => {
     setPaymentMethod(e.target.value);
-  }
+  };
 
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors },
+  } = useForm();
 
+  const processOrder = (data) => {
+    // console.log(data);
+    if (paymentMethod == "cod") {
+      saveOrder(data, "not paid");
+    }
+  };
+
+  const saveOrder = (formData, paymentStatus) => {
+    const newFormData = {
+      ...formData,
+      grand_total: grandTotal(),
+      subtotal: subTotal(),
+      shipping: shipping(),
+      discount: 0,
+      payment_status: paymentStatus,
+      // لا ترسل 'state: "pending"' لأن هذا يتعارض مع حقل state في الفورم
+      // الطلب: formData يحتوي بالفعل على state من الفورم (المدينة/الولاية)
+      cart: cartData.map((item) => ({
+        // تأكد من تطابق أسماء الحقول
+        product_id: item.product_id,
+        name: item.title,
+        size: item.size || "N/A",
+        price: item.price,
+        unit_price: item.price,
+        qty: item.qty,
+      })),
+    };
+
+    console.log("Sending data:", newFormData);
+
+    fetch(`${apiUrl}/save-order`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${userToken()}`,
+      },
+      body: JSON.stringify(newFormData),
+    })
+      .then(async (res) => {
+        const text = await res.text();
+        console.log("Raw response:", text);
+
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          console.error("JSON parse error:", e);
+          throw new Error("Invalid JSON response");
+        }
+
+        if (!res.ok) {
+          throw new Error(data.message || "Server error");
+        }
+
+        return data;
+      })
+      .then((result) => {
+        console.log("Success:", result);
+        if (result.status === 200) {
+          localStorage.removeItem('cart');
+          navigate(`/order/confirmation/${result.order_id}`);
+        } else {
+          toast.error(result.message || "Failed to place order");
+        }
+      })
+      .catch((err) => {
+        console.error("Fetch error:", err);
+        alert("Error: " + err.message);
+      });
+  };
   return (
     <Layout>
       <div className="container pb-5">
@@ -29,190 +113,221 @@ const Checkout = () => {
             </nav>
           </div>
         </div>
-        <div className="row">
-          <div className="col-md-7">
-            <h3 className="border-bottom pb-3">
-              <strong>Billing Details</strong>
-            </h3>
+        <form onSubmit={handleSubmit(processOrder)}>
+          <div className="row">
+            <div className="col-md-7">
+              <h3 className="border-bottom pb-3">
+                <strong>Billing Details</strong>
+              </h3>
 
-            <form action="">
               <div className="row pt-3">
                 <div className="col-md-6">
                   <div className="mb-3">
                     <input
+                      {...register("name", { required: "Name is required" })}
                       type="text"
-                      className="form-control"
+                      className={`form-control ${errors.name ? "is-invalid" : ""}`}
                       placeholder="Name"
                     />
+                    {errors.name && (
+                      <p className="invalid-feedback">{errors.name?.message}</p>
+                    )}
                   </div>
                 </div>
 
                 <div className="col-md-6">
                   <div className="mb-3">
                     <input
+                      {...register("email", {
+                        required: "Email is required",
+                        pattern: {
+                          value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                          message: "Invalid email address",
+                        },
+                      })}
                       type="text"
-                      className="form-control"
+                      className={`form-control ${errors.email ? "is-invalid" : ""}`}
                       placeholder="Email"
                     />
+                    {errors.email && (
+                      <p className="invalid-feedback">
+                        {errors.email?.message}
+                      </p>
+                    )}
                   </div>
                 </div>
 
                 <div className="mb-3">
                   <textarea
-                    className="form-control"
+                    {...register("address", {
+                      required: "Address is required",
+                    })}
+                    className={`form-control ${errors.address ? "is-invalid" : ""}`}
                     rows={3}
                     placeholder="Address"
                   ></textarea>
+                  {errors.address && (
+                    <p className="invalid-feedback">
+                      {errors.address?.message}
+                    </p>
+                  )}
                 </div>
 
                 <div className="col-md-6">
                   <div className="mb-3">
                     <input
+                      {...register("city", { required: "City is required" })}
                       type="text"
-                      className="form-control"
+                      className={`form-control ${errors.city ? "is-invalid" : ""}`}
                       placeholder="City"
                     />
+                    {errors.city && (
+                      <p className="invalid-feedback">{errors.city?.message}</p>
+                    )}
                   </div>
                 </div>
 
                 <div className="col-md-6">
                   <div className="mb-3">
                     <input
+                      {...register("state", { required: "State is required" })}
                       type="text"
-                      className="form-control"
+                      className={`form-control ${errors.state ? "is-invalid" : ""}`}
                       placeholder="State"
                     />
+                    {errors.state && (
+                      <p className="invalid-feedback">
+                        {errors.state?.message}
+                      </p>
+                    )}
                   </div>
                 </div>
 
                 <div className="col-md-6">
                   <div className="mb-3">
                     <input
+                      {...register("zip", { required: "Zip is required" })}
                       type="text"
-                      className="form-control"
+                      className={`form-control ${errors.zip ? "is-invalid" : ""}`}
                       placeholder="Zip"
                     />
+                    {errors.zip && (
+                      <p className="invalid-feedback">{errors.zip?.message}</p>
+                    )}
                   </div>
                 </div>
 
                 <div className="col-md-6">
                   <div className="mb-3">
                     <input
+                      {...register("mobile", {
+                        required: "Mobile is required",
+                      })}
                       type="text"
-                      className="form-control"
+                      className={`form-control ${errors.mobile ? "is-invalid" : ""}`}
                       placeholder="Mobile"
                     />
+                    {errors.mobile && (
+                      <p className="invalid-feedback">
+                        {errors.mobile?.message}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
-            </form>
-          </div>
+            </div>
 
-          <div className="col-md-5">
-            <h3 className="border-bottom pb-3">
-              <strong>Items</strong>
-            </h3>
+            <div className="col-md-5">
+              <h3 className="border-bottom pb-3">
+                <strong>Items</strong>
+              </h3>
 
-            <table className="table">
-              <tbody>
-                <tr>
-                  <td width={100}>
-                    <img src={PrductImage} width={80} alt="" />
-                  </td>
-                  <td width={400}>
-                    <h4>Product Name</h4>
-                    <div className="d-flex align-items-center pt-3">
-                      <span>$10</span>
-                      <div className="ps-3">
-                        <button className="btn btn-size">S</button>
-                      </div>
-                      <div className="ps-5">X 1</div>
+              <table className="table">
+                <tbody>
+                  {cartData &&
+                    cartData.map((item) => {
+                      return (
+                        <tr key={item.id}>
+                          <td width={100}>
+                            <img src={item.image_url} width={80} alt="" />
+                          </td>
+                          <td width={400}>
+                            <h4>{item.title}</h4>
+                            <div className="d-flex align-items-center pt-3">
+                              <span>${item.price.toFixed(2)}</span>
+                              <div className="ps-3">
+                                {item.size && (
+                                  <button className="btn btn-size">
+                                    {item.size}
+                                  </button>
+                                )}{" "}
+                              </div>
+                              <div className="ps-5">X {item.qty}</div>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                </tbody>
+              </table>
+
+              <div className="row ">
+                <div className="col-md-12">
+                  <div className="d-flex justify-content-between border-bottom pb-2">
+                    <div>
+                      <strong>Subtotal</strong>
                     </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td width={100}>
-                    <img src={PrductImage} width={80} alt="" />
-                  </td>
-                  <td width={400}>
-                    <h4>Product Name</h4>
-                    <div className="d-flex align-items-center pt-3">
-                      <span>$10</span>
-                      <div className="ps-3">
-                        <button className="btn btn-size">S</button>
-                      </div>
-                      <div className="ps-5">X 1</div>
+                    <div>${subTotal().toFixed(2)}</div>
+                  </div>
+
+                  <div className="d-flex justify-content-between border-bottom py-2">
+                    <div>
+                      <strong>Shipping</strong>
                     </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td width={100}>
-                    <img src={PrductImage} width={80} alt="" />
-                  </td>
-                  <td width={400}>
-                    <h4>Product Name</h4>
-                    <div className="d-flex align-items-center pt-3">
-                      <span>$10</span>
-                      <div className="ps-3">
-                        <button className="btn btn-size">S</button>
-                      </div>
-                      <div className="ps-5">X 1</div>
+                    <div>${shipping().toFixed(2)}</div>
+                  </div>
+
+                  <div className="d-flex justify-content-between border-bottom">
+                    <div>
+                      <strong>Grand Total</strong>
                     </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            <div className="row ">
-              <div className="col-md-12">
-                <div className="d-flex justify-content-between border-bottom pb-2">
-                  <div>
-                    <strong>Subtotal</strong>
+                    <div>${grandTotal().toFixed(2)}</div>
                   </div>
-                  <div>$20</div>
-                </div>
-
-                <div className="d-flex justify-content-between border-bottom py-2">
-                  <div>
-                    <strong>Shipping</strong>
-                  </div>
-                  <div>$20</div>
-                </div>
-
-                <div className="d-flex justify-content-between border-bottom">
-                  <div>
-                    <strong>Grand Total</strong>
-                  </div>
-                  <div>$25</div>
                 </div>
               </div>
-            </div>
 
-            <h3 className="border-bottom pt-4 pb-3">
-              <strong>Payment Method</strong>
-            </h3>
+              <h3 className="border-bottom pt-4 pb-3">
+                <strong>Payment Method</strong>
+              </h3>
 
-            <div className="pt-2">
-              <input type="radio"
-              onClick={handlePaymentMethod}
-              checked={paymentMethod == 'strip'} value={'strip'} />
-              <label htmlFor="" className="form-lable ps-2">
-                Stripe
-              </label>
+              <div className="pt-2">
+                <input
+                  type="radio"
+                  onChange={handlePaymentMethod}
+                  checked={paymentMethod === "strip"}
+                  value="strip"
+                />
+                <label htmlFor="" className="form-lable ps-2 me-4">
+                  Stripe
+                </label>
 
-              <input type="radio"
-              onClick={handlePaymentMethod}
-              checked={paymentMethod == 'cod'} value={'cod'} className="ms-3" />
-              <label htmlFor="" className="form-lable ps-2">
-                COD
-              </label>
-            </div>
+                <input
+                  type="radio"
+                  onChange={handlePaymentMethod}
+                  checked={paymentMethod === "cod"}
+                  value="cod"
+                />
+                <label htmlFor="" className="form-lable ps-2">
+                  COD
+                </label>
+              </div>
 
-            <div className="d-flex py-3">
-              <button className="btn btn-primary">Pay Now </button>
+              <div className="d-flex py-3">
+                <button className="btn btn-primary">Pay Now </button>
+              </div>
             </div>
           </div>
-        </div>
+        </form>
       </div>
     </Layout>
   );

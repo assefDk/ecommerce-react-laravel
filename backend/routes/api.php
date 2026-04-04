@@ -7,6 +7,7 @@ use App\Http\Controllers\admin\ProductController;
 use App\Http\Controllers\admin\SizeController;
 use App\Http\Controllers\admin\TempImageContoller;
 use App\Http\Controllers\front\AccountController;
+use App\Http\Controllers\front\OrderController;
 use App\Http\Controllers\front\ProductFrontContoller;
 use Illuminate\Support\Facades\Route;
 
@@ -33,8 +34,24 @@ Route::post('/login', [AccountController::class, 'authenticate']);
 
 
 
+// account auth
+Route::group(['middleware' => ['auth:sanctum','checkUserRole']], function () {
+    Route::post('save-order', [OrderController::class, 'saveOrder']);
 
-Route::group(['middleware' => 'auth:sanctum'], function () {
+
+    
+    Route::post('logout', [AccountController::class, 'logout']);
+});
+
+
+
+
+
+
+
+
+// Admin routes
+Route::group(['middleware' => ['auth:sanctum', 'checkAdminRole']], function () {
     Route::resource('categories', CategoryController::class);
     Route::resource('brands', BrandController::class);
     Route::get('sizes', [SizeController::class, 'index']);
@@ -43,7 +60,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('temp-images', [TempImageContoller::class, 'store']);
     Route::delete('temp-images/{id}', [TempImageContoller::class, 'destroy']);
 
-    
+
+
 
 
 });

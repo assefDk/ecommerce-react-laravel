@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Home from "./components/Home";
@@ -27,6 +26,7 @@ import Register from "./components/Register";
 import { default as UserLogin } from "./components/Login";
 import Profile from "./components/profile";
 import { RequireAuth } from "./components/RequireAuth";
+import Confirmation from "./components/Confirmation";
 
 function App() {
   return (
@@ -38,10 +38,9 @@ function App() {
           <Route path="/shop" element={<Shop />} />
           <Route path="/product/:id" element={<Product />} />
           <Route path="/cart" element={<Cart />} />
-          <Route path="/checkout" element={<Checkout />} />
           <Route path="/account/register" element={<Register />} />
           <Route path="/account/login" element={<UserLogin />} />
-
+          {/* Auth user route  */}
           <Route
             path="/account"
             element={
@@ -50,11 +49,25 @@ function App() {
               </RequireAuth>
             }
           />
-
-
+          <Route
+            path="/checkout"
+            element={
+              <RequireAuth>
+                <Checkout />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/order/confirmation/:id"
+            element={
+              <RequireAuth>
+                <Confirmation />
+              </RequireAuth>
+            }
+          />
+          
           {/* admin routes */}
           <Route path="/admin/login" element={<Login />} />
-
           <Route
             path="/admin/dashboard"
             element={
@@ -63,7 +76,6 @@ function App() {
               </AdminRequireAuth>
             }
           />
-
           {/* categories */}
           <Route
             path="/admin/categories"
@@ -89,7 +101,6 @@ function App() {
               </AdminRequireAuth>
             }
           />
-
           {/* brand */}
           <Route
             path="/admin/brands"
@@ -115,7 +126,6 @@ function App() {
               </AdminRequireAuth>
             }
           />
-
           {/* Product */}
           <Route
             path="/admin/products"
@@ -133,7 +143,6 @@ function App() {
               </AdminRequireAuth>
             }
           />
-
           <Route
             path="/admin/product/edit/:id"
             element={
@@ -142,7 +151,6 @@ function App() {
               </AdminRequireAuth>
             }
           />
-
           {/* 404 page */}
           <Route path="*" element={<NotFound />} />
         </Routes>
