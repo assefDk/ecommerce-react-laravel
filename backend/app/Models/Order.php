@@ -31,6 +31,13 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    protected function casts():array
+    {
+        return [
+            'created_at' => 'datetime:d M -Y'
+        ];
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

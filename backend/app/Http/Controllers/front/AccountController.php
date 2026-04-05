@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\front;
 
 use App\Http\Controllers\Controller;
+use App\Models\Order;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -76,6 +77,7 @@ class AccountController extends Controller
         }
     }
 
+
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
@@ -84,6 +86,33 @@ class AccountController extends Controller
             'status' => 200,
             'message' => "You have logged out successfully"
         ], 200);
+    }
+
+    public function getOrderDetails($id, Request $request)
+    {
+        $order = Order::with('orderItems')
+        ->where('id', $id)
+            ->where(
+                'user_id'
+                ,
+                $request->user()->id
+            )->first();
+
+        if ($order) {
+            return response()->json([
+                'status' => 200,
+                'data' => $order
+            ], 200);
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => "Order not found",
+                "data" => []
+            ], 404);
+        }
+
+
+
     }
 
 }
