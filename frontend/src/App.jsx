@@ -19,6 +19,9 @@ import { default as ShowBrands } from "./components/admin/brand/Show";
 import { default as CreateBrand } from "./components/admin/brand/Create";
 import { default as EditBrand } from "./components/admin/brand/Edit";
 
+import { default as ShowOrders } from "./components/admin/orders/ShowOrders";
+import { default as OrderDetail } from "./components/admin/orders/OrderDetail";
+
 import { default as ShowProducts } from "./components/admin/product/Show";
 import { default as CreateProduct } from "./components/admin/product/Create";
 import { default as EditProduct } from "./components/admin/product/Edit";
@@ -65,7 +68,7 @@ function App() {
               </RequireAuth>
             }
           />
-          
+
           {/* admin routes */}
           <Route path="/admin/login" element={<Login />} />
           <Route
@@ -151,6 +154,27 @@ function App() {
               </AdminRequireAuth>
             }
           />
+          {/* orders */}
+          <Route
+            path="/admin/orders"
+            element={
+              <AdminRequireAuth>
+                <ShowOrders />
+              </AdminRequireAuth>
+            }
+          />
+
+          <Route
+            path="/admin/orders/:id"
+            element={
+              <AdminRequireAuth>
+                <OrderDetail />
+              </AdminRequireAuth>
+            }
+          />
+
+
+
           {/* 404 page */}
           <Route path="*" element={<NotFound />} />
         </Routes>

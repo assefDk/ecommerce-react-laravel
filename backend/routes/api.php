@@ -6,6 +6,7 @@ use App\Http\Controllers\admin\CategoryController;
 use App\Http\Controllers\admin\ProductController;
 use App\Http\Controllers\admin\SizeController;
 use App\Http\Controllers\admin\TempImageContoller;
+use App\Http\Controllers\admin\OrderController as AdminOrderController;
 use App\Http\Controllers\front\AccountController;
 use App\Http\Controllers\front\OrderController;
 use App\Http\Controllers\front\ProductFrontContoller;
@@ -63,7 +64,13 @@ Route::group(['middleware' => ['auth:sanctum', 'checkAdminRole']], function () {
     Route::post('temp-images', [TempImageContoller::class, 'store']);
     Route::delete('temp-images/{id}', [TempImageContoller::class, 'destroy']);
 
+    // Orders
+    Route::get('orders', [AdminOrderController::class, 'index']);
+    Route::get('orders/{id}', [AdminOrderController::class, 'detail']);
+    Route::post('update-order/{id}', [AdminOrderController::class, 'updateOrder']);
 
+    
+    
 
 
 
