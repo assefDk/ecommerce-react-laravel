@@ -27,7 +27,7 @@ import { default as CreateProduct } from "./components/admin/product/Create";
 import { default as EditProduct } from "./components/admin/product/Edit";
 import Register from "./components/Register";
 import { default as UserLogin } from "./components/Login";
-import Profile from "./components/profile";
+import Profile from "./components/front/Profile";
 import { RequireAuth } from "./components/RequireAuth";
 import Confirmation from "./components/Confirmation";
 import MyOrders from "./components/front/MyOrders";

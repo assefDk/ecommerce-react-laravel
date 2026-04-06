@@ -23,8 +23,34 @@ const Checkout = () => {
     register,
     handleSubmit,
     setError,
+    reset,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    defaultValues: async () => {
+      fetch(`${apiUrl}/get-account-details`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${userToken()}`,
+        },
+      })
+        .then((response) => response.json())
+        .then((result) => {
+          // console.log(result);
+          if (result.status == 200) {
+            reset({
+              name: result.data.name,
+              email: result.data.email,
+              address: result.data.address,
+              mobile: result.data.mobile,
+              city: result.data.city,
+              state: result.data.state,
+              zip: result.data.zip,
+            });
+          }
+        });
+    },
+  });
 
   const processOrder = (data) => {
     // console.log(data);
@@ -41,10 +67,7 @@ const Checkout = () => {
       shipping: shipping(),
       discount: 0,
       payment_status: paymentStatus,
-      // لا ترسل 'state: "pending"' لأن هذا يتعارض مع حقل state في الفورم
-      // الطلب: formData يحتوي بالفعل على state من الفورم (المدينة/الولاية)
       cart: cartData.map((item) => ({
-        // تأكد من تطابق أسماء الحقول
         product_id: item.product_id,
         name: item.title,
         size: item.size || "N/A",
@@ -86,7 +109,7 @@ const Checkout = () => {
       .then((result) => {
         console.log("Success:", result);
         if (result.status === 200) {
-          localStorage.removeItem('cart');
+          localStorage.removeItem("cart");
           navigate(`/order/confirmation/${result.order_id}`);
         } else {
           toast.error(result.message || "Failed to place order");
