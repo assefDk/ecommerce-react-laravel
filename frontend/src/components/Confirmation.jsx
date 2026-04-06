@@ -188,7 +188,7 @@ const Confirmation = () => {
               </div>
               
               <div className="text-center mt-4">
-                <Link to={`/order/${order.id}`} className="btn btn-primary">
+                <Link to={`/account/orders/details/${order.id}`} className="btn btn-primary">
                   View Order Details
                 </Link>
                 <Link to="/" className="btn btn-outline-secondary ms-2">

@@ -1,8 +1,10 @@
 import { createContext, useState, useEffect } from "react";
+import { apiUrl, userToken } from "../common/http";
 
 export const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
+  const [shippingCost, setShippingCost] = useState(0);
   const [cartData, setCartData] = useState(() => {
     try {
       const storedCart = localStorage.getItem("cart");
@@ -17,7 +19,6 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem("cart", JSON.stringify(cartData));
   }, [cartData]);
 
-  // ✅ إضافة منتج
   const addToCart = (product, size = null) => {
     setCartData((prevCart) => {
       const existingProductIndex = prevCart.findIndex(
@@ -46,7 +47,12 @@ export const CartProvider = ({ children }) => {
   };
 
   const shipping = () => {
-    return 0;
+    let shippingCharge = 0;
+    cartData.map((item) => {
+      shippingCharge += shippingCost * item.qty;
+    });
+
+    return shippingCharge;
   };
 
   const subTotal = () => {
@@ -80,6 +86,27 @@ export const CartProvider = ({ children }) => {
     });
     return qty;
   };
+
+  useEffect(() => {
+    fetch(`${apiUrl}/get-shipping`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${userToken()}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((result) => {
+        console.log(result);
+        if (result.status == 200) {
+          setShippingCost(result.data.shipping_charge);
+        } else {
+          setShippingCost(0);
+          console.log("something went wrong");
+        }
+      });
+  });
 
   return (
     <CartContext.Provider

@@ -60,7 +60,7 @@ const Cart = () => {
                         <td width={400}>
                           <h4>{item.title}</h4>
                           <div className="d-flex align-items-center pt-3">
-                            <span>${item.price.toFixed(2)}</span>
+                            <span>${item.price}</span>
                             <div className="ps-3">
                               {item.size && (
                                 <button className="btn btn-size">

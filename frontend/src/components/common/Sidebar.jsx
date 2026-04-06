@@ -29,7 +29,7 @@ const Sidebar = () => {
             <a href="">Users</a>
           </li>
           <li>
-            <a href="">Shipping</a>
+            <Link to="/admin/shipping">Shipping</Link>
           </li>
           <li>
             <a href="">Change Password</a>

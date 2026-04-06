@@ -4,12 +4,14 @@ use App\Http\Controllers\admin\AuthController;
 use App\Http\Controllers\admin\BrandController;
 use App\Http\Controllers\admin\CategoryController;
 use App\Http\Controllers\admin\ProductController;
+use App\Http\Controllers\admin\ShippingContoller;
 use App\Http\Controllers\admin\SizeController;
 use App\Http\Controllers\admin\TempImageContoller;
 use App\Http\Controllers\admin\OrderController as AdminOrderController;
 use App\Http\Controllers\front\AccountController;
 use App\Http\Controllers\front\OrderController;
 use App\Http\Controllers\front\ProductFrontContoller;
+use App\Http\Controllers\front\ShippingController as FrontShippingController;
 use Illuminate\Support\Facades\Route;
 
 // Route::get('/user', function (Request $request) {
@@ -31,19 +33,21 @@ Route::get('get-product/{id}', [ProductFrontContoller::class, 'grtProduct']);
 Route::post('/register', [AccountController::class, 'register']);
 Route::post('/login', [AccountController::class, 'authenticate']);
 
+Route::get('get-shipping', [FrontShippingController::class, 'getShipping']);
+
 
 
 
 
 // account auth
-Route::group(['middleware' => ['auth:sanctum','checkUserRole']], function () {
+Route::group(['middleware' => ['auth:sanctum', 'checkUserRole']], function () {
     Route::post('save-order', [OrderController::class, 'saveOrder']);
     Route::get('get-orders-details/{id}', [AccountController::class, 'getOrderDetails']);
     Route::get('get-orders', [AccountController::class, 'getOrders']);
     Route::get('get-account-details', [AccountController::class, 'getAccountDetails']);
     Route::post('update-profile', [AccountController::class, 'updateProfile']);
 
-    
+
     Route::post('logout', [AccountController::class, 'logout']);
 });
 
@@ -69,10 +73,9 @@ Route::group(['middleware' => ['auth:sanctum', 'checkAdminRole']], function () {
     Route::get('orders/{id}', [AdminOrderController::class, 'detail']);
     Route::post('update-order/{id}', [AdminOrderController::class, 'updateOrder']);
 
-    
-    
-
-
+    // Shipping charge
+    Route::get('shipping-charge', [ShippingContoller::class, 'getShipping']);
+    Route::post('save-shipping', [ShippingContoller::class, 'updateShipping']);
 
 });
 
