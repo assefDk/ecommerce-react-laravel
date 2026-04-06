@@ -90,7 +90,7 @@ class AccountController extends Controller
 
     public function getOrderDetails($id, Request $request)
     {
-        $order = Order::with('orderItems')
+        $order = Order::with('orderItems','orderItems.product')
         ->where('id', $id)
             ->where(
                 'user_id'
@@ -113,6 +113,14 @@ class AccountController extends Controller
 
 
 
+    }
+
+    public function getOrders(Request $request){
+        $orders = Order::where('user_id', $request->user()->id)->get();
+        return response()->json([
+            'status' => 200,
+            'data' => $orders
+        ], 200);
     }
 
 }

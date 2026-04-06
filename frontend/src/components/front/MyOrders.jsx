@@ -1,23 +1,24 @@
 import React, { useEffect, useState } from "react";
-import Layout from "../../common/Layout";
+import Layout from "../common/Layout";
+import Sidebar from "../common/Sidebar";
 import { Link } from "react-router-dom";
-import Sidebar from "../../common/Sidebar";
-import { adminToken, apiUrl } from "../../common/http";
-import Loader from "../../common/Loader";
-import Nostate from "../../common/Nostate";
+import { apiUrl, userToken } from "../common/http";
+import UserSidebar from "../common/UserSidebar";
+import Loader from "../common/Loader";
+import Nostate from "../common/Nostate";
 
-const ShowOrders = () => {
+const MyOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loader, setLoader] = useState();
 
   const fetchOrders = async () => {
     setLoader(true);
-    const res = await fetch(`${apiUrl}/orders`, {
+    const res = await fetch(`${apiUrl}/get-orders`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        Authorization: `Bearer ${adminToken()}`,
+        Authorization: `Bearer ${userToken()}`,
       },
     })
       .then((res) => res.json())
@@ -36,19 +37,15 @@ const ShowOrders = () => {
   useEffect(() => {
     fetchOrders();
   }, []);
-
   return (
     <Layout>
       <div className="container">
         <div className="row">
           <div className="d-flex justify-content-between mt-5 pb-3">
-            <h4 className="h4 pb-0 mb-0">Order</h4>
-            <Link className="btn btn-primary" to="/">
-              Back
-            </Link>
+            <h4 className="h4 pb-0 mb-0">My Orders</h4>
           </div>
           <div className="col-md-3">
-            <Sidebar />
+            <UserSidebar />
           </div>
           <div className="col-md-9">
             <div className="card shadow">
@@ -77,7 +74,7 @@ const ShowOrders = () => {
                         return (
                           <tr key={order.id}>
                             <td>
-                              <Link to={`/admin/orders/${order.id}`}>
+                              <Link to={`/account/orders/details/${order.id}`}>
                                 {order.id}
                               </Link>
                             </td>
@@ -129,4 +126,4 @@ const ShowOrders = () => {
   );
 };
 
-export default ShowOrders;
+export default MyOrders;

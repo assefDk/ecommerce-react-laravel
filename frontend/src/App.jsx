@@ -30,6 +30,8 @@ import { default as UserLogin } from "./components/Login";
 import Profile from "./components/profile";
 import { RequireAuth } from "./components/RequireAuth";
 import Confirmation from "./components/Confirmation";
+import MyOrders from "./components/front/MyOrders";
+import { default as UserOrderDetail } from "./components/front/OrderDetail";
 
 function App() {
   return (
@@ -43,6 +45,7 @@ function App() {
           <Route path="/cart" element={<Cart />} />
           <Route path="/account/register" element={<Register />} />
           <Route path="/account/login" element={<UserLogin />} />
+
           {/* Auth user route  */}
           <Route
             path="/account"
@@ -52,6 +55,23 @@ function App() {
               </RequireAuth>
             }
           />
+          <Route
+            path="/account/orders"
+            element={
+              <RequireAuth>
+                <MyOrders />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/account/orders/details/:id"
+            element={
+              <RequireAuth>
+                <UserOrderDetail />
+              </RequireAuth>
+            }
+          />
+
           <Route
             path="/checkout"
             element={
@@ -172,8 +192,6 @@ function App() {
               </AdminRequireAuth>
             }
           />
-
-
 
           {/* 404 page */}
           <Route path="*" element={<NotFound />} />
